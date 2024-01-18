@@ -83,6 +83,7 @@ export function DefaultRenderNode({
   const {
     kind,
     metadata: { name, namespace = DEFAULT_NAMESPACE, title },
+    spec,
   } = entity;
 
   const padding = 10;
@@ -94,7 +95,7 @@ export function DefaultRenderNode({
   const displayTitle =
     title ??
     (kind && name && namespace
-      ? humanizeEntityRef({ kind, name, namespace })
+      ? humanizeEntityRef({ kind, name, namespace, spec })
       : id);
 
   return (
