@@ -19,7 +19,10 @@ import {
   CompoundEntityRef,
   DEFAULT_NAMESPACE,
 } from '@backstage/catalog-model';
+import { JsonObject } from '@backstage/types';
 import get from 'lodash/get';
+
+type CompoundEntityRefWithSpec = CompoundEntityRef & { spec?: JsonObject };
 
 /**
  * @param defaultNamespace - if set to false then namespace is never omitted,
@@ -28,7 +31,7 @@ import get from 'lodash/get';
  * @public
  **/
 export function humanizeEntityRef(
-  entityRef: Entity | CompoundEntityRef,
+  entityRef: Entity | (CompoundEntityRef & { spec?: JsonObject }),
   opts?: {
     defaultKind?: string;
     defaultNamespace?: string | false;
@@ -43,6 +46,13 @@ export function humanizeEntityRef(
     kind = entityRef.kind;
     namespace = entityRef.metadata.namespace;
     name = entityRef.metadata.name;
+  } else if (
+    entityRef.kind.toLocaleLowerCase() === 'group' &&
+    'spec' in entityRef
+  ) {
+    kind = entityRef.kind;
+    namespace = entityRef.namespace;
+    name = humanizeEntity(entityRef, entityRef.name);
   } else {
     kind = entityRef.kind;
     namespace = entityRef.namespace;
@@ -81,12 +91,16 @@ export function humanizeEntityRef(
  * @returns Readable name, defaults to `defaultName`.
  *
  */
-export function humanizeEntity(entity: Entity, defaultName: string) {
+export function humanizeEntity(
+  entity: Entity | CompoundEntityRefWithSpec,
+  defaultName: string,
+) {
   for (const path of ['spec.profile.displayName', 'metadata.title']) {
     const value = get(entity, path);
     if (value && typeof value === 'string') {
       return value;
     }
   }
+
   return defaultName;
 }
