@@ -99,7 +99,7 @@ export class OneLoginProvider implements OAuthHandlers {
     return await executeRedirectStrategy(req, this._strategy, {
       accessType: 'offline',
       prompt: 'consent',
-      scope: 'openid',
+      scope: 'openid profile email',
       state: encodeState(req.state),
     });
   }
@@ -121,7 +121,7 @@ export class OneLoginProvider implements OAuthHandlers {
       await executeRefreshTokenStrategy(
         this._strategy,
         req.refreshToken,
-        req.scope,
+        'openid profile email',
       );
 
     const fullProfile = await executeFetchUserProfileStrategy(
