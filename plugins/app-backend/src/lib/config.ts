@@ -31,7 +31,9 @@ type InjectOptions = {
 /**
  * Injects configs into the app bundle, replacing any existing injected config.
  */
-export async function injectConfig(options: InjectOptions) {
+export async function injectConfig(
+  options: InjectOptions,
+): Promise<string | undefined> {
   const { staticDir, logger, appConfigs } = options;
 
   const files = await fs.readdir(staticDir);
@@ -47,24 +49,25 @@ export async function injectConfig(options: InjectOptions) {
     if (content.includes('__APP_INJECTED_RUNTIME_CONFIG__')) {
       logger.info(`Injecting env config into ${jsFile}`);
 
-      const newContent = content.replace(
+      const newContent = content.replaceAll(
         '"__APP_INJECTED_RUNTIME_CONFIG__"',
         injected,
       );
       await fs.writeFile(path, newContent, 'utf8');
-      return;
+      return path;
     } else if (content.includes('__APP_INJECTED_CONFIG_MARKER__')) {
       logger.info(`Replacing injected env config in ${jsFile}`);
 
-      const newContent = content.replace(
-        /\/\*__APP_INJECTED_CONFIG_MARKER__\*\/.*\/\*__INJECTED_END__\*\//,
+      const newContent = content.replaceAll(
+        /\/\*__APP_INJECTED_CONFIG_MARKER__\*\/.*?\/\*__INJECTED_END__\*\//g,
         injected,
       );
       await fs.writeFile(path, newContent, 'utf8');
-      return;
+      return path;
     }
   }
   logger.info('Env config not injected');
+  return undefined;
 }
 
 type ReadOptions = {

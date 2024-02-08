@@ -32,6 +32,7 @@ describe('ConfigClusterLocator', () => {
     authStrategy = {
       getCredential: jest.fn(),
       validateCluster: jest.fn().mockReturnValue([]),
+      presentAuthMetadata: jest.fn(),
     };
   });
 
@@ -402,6 +403,27 @@ describe('ConfigClusterLocator', () => {
 
     expect(() => ConfigClusterLocator.fromConfig(config, authStrategy)).toThrow(
       `Invalid cluster 'cluster1': mock error`,
+    );
+  });
+
+  it('fails on duplicate cluster names', () => {
+    const config: Config = new ConfigReader({
+      clusters: [
+        {
+          name: 'cluster',
+          url: 'url',
+          authProvider: 'authProvider',
+        },
+        {
+          name: 'cluster',
+          url: 'url',
+          authProvider: 'authProvider',
+        },
+      ],
+    });
+
+    expect(() => ConfigClusterLocator.fromConfig(config, authStrategy)).toThrow(
+      `Duplicate cluster name 'cluster'`,
     );
   });
 });
